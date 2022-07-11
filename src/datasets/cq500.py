@@ -130,11 +130,18 @@ def select_imgs(images_folder, output_folder=None):
         print(f'Selecting image for subject {subject}')
         # Get the path of the biggest file in that folder
         imgs = [os.path.join(subj_folder, f) for f in os.listdir(subj_folder)]
-        biggest_file = max(imgs, key=os.path.getsize)
+        imgs.sort(key=os.path.getsize, reverse=True)
+        saved_img = imgs[0]
+        for i in range(len(imgs)):
+            img = sitk.ReadImage(imgs[i])
+            if img.GetSize()[2] < 300:
+                saved_img = imgs[i]
+                break
+
         # Save the file to the output folder
-        biggest_file_path = os.path.join(subj_folder, biggest_file)
+        biggest_file_path = os.path.join(subj_folder, saved_img)
         biggest_file_out_path = os.path.join(output_folder,
-                                             os.path.split(biggest_file)[1])
+                                             os.path.split(saved_img)[1])
         # Copy the file using shutil
         print(f'Copying {biggest_file_path} to {biggest_file_out_path}')
         shutil.copyfile(biggest_file_path, biggest_file_out_path)
