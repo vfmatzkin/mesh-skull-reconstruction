@@ -68,6 +68,8 @@ def deform_atlas_reg(template_path, dataset_paths, output_path=None,
         output_path = os.path.join(
             os.path.dirname(template_path), out_folder_name
         )
+    elif not os.path.exists(output_path):
+        os.makedirs(output_path, exist_ok=True)
 
     deformetrica = dfca.Deformetrica(output_path, verbosity)
 
