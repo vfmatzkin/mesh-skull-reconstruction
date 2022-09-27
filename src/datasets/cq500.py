@@ -121,6 +121,10 @@ def select_imgs(images_folder, output_folder=None):
     """
     output_folder = os.path.join(images_folder, 'selected') \
         if output_folder is None else output_folder
+
+    images_folder = os.path.expanduser(images_folder)
+    output_folder = os.path.expanduser(output_folder)
+
     os.makedirs(output_folder, exist_ok=True)
 
     for subject in os.listdir(images_folder):
