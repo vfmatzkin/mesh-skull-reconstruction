@@ -109,7 +109,8 @@ def convert_nifti(input_folder, out_dir=None):
     return out_dir
 
 
-def select_imgs(images_folder, output_folder=None):
+def select_imgs(images_folder, output_folder=None, preselected=None,
+                in_observation=None, excluded=None):
     """ From the CQ500 dataset, select the biggest images for each subject.
 
     Note that it might copy images that are not part of the dataset like the
@@ -117,6 +118,9 @@ def select_imgs(images_folder, output_folder=None):
 
     :param images_folder: Folder of the previously converted to NIfTI images.
     :param output_folder: Folder where the selected images will be saved.
+    :param preselected:
+    :param in_observation:
+    :param excluded:
     :return: output_folder.
     """
     output_folder = os.path.join(images_folder, 'selected') \
