@@ -118,10 +118,13 @@ def select_imgs(images_folder, output_folder=None, preselected=None,
 
     :param images_folder: Folder of the previously converted to NIfTI images.
     :param output_folder: Folder where the selected images will be saved.
-    :param preselected:
-    :param in_observation:
-    :param excluded:
-    :return: output_folder.
+    :param preselected: Images that are not selected automatically and are
+    preferred over the automatically selected ones.
+    :param in_observation: Images that might not be selected automatically but
+    have to be checked after registration.
+    :param excluded: Images of excluded patients (no images from these patients
+    will be selected).
+    :return: output_folder: Folder where the selected images are saved.
     """
     output_folder = os.path.join(images_folder, 'selected') \
         if output_folder is None else output_folder
@@ -131,20 +134,36 @@ def select_imgs(images_folder, output_folder=None, preselected=None,
 
     os.makedirs(output_folder, exist_ok=True)
 
+    presel = preselected if preselected is not None else []
+    presel += in_observation if in_observation is not None else []
+
     for subject in os.listdir(images_folder):
         subj_folder = os.path.join(images_folder, subject)
-        if not os.path.isdir(subj_folder) or subject == 'selected':
+        if not subject.startswith('CQ500-CT') \
+                or not os.path.isdir(subj_folder) \
+                or subject.startswith('selected'):
             continue
+
         print(f'Selecting image for subject {subject}')
         # Get the path of the biggest file in that folder
-        imgs = [os.path.join(subj_folder, f) for f in os.listdir(subj_folder)]
-        imgs.sort(key=os.path.getsize, reverse=True)
-        saved_img = imgs[0]
-        for i in range(len(imgs)):
-            img = sitk.ReadImage(imgs[i])
-            if img.GetSize()[2] < 300:
-                saved_img = imgs[i]
-                break
+        imgsf = os.listdir(subj_folder)
+        imgs = [os.path.join(subj_folder, f) for f in imgsf]
+        if any([ex in imgsf for ex in excluded]):
+            print(f"Subject excluded.")
+            continue
+        elif any([ps in imgsf for ps in presel]):
+            saved_img = os.path.join(subj_folder,
+                                     [ps for ps in imgsf if ps in presel][0])
+            print(f"Subject preselected ({saved_img}).")
+        else:
+            imgs.sort(key=os.path.getsize, reverse=True)
+            saved_img = imgs[0]
+            for i in range(len(imgs)):
+                img = sitk.ReadImage(imgs[i])
+                if img.GetSize()[2] < 300:
+                    saved_img = imgs[i]
+                    print(f"Subject selected ({saved_img}).")
+                    break
 
         # Save the file to the output folder
         biggest_file_path = os.path.join(subj_folder, saved_img)
